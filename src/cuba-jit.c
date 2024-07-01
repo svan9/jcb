@@ -6,6 +6,11 @@ void cj_write() {
   NanJitAppendNS(&jit, NA_PRINT, NanStringFromStr("hellow, word\n"));
   NanJitFSave(&jit, test_file, NanJitResolved);
 }
+
+/**
+ * @brief 
+
+ */
 void cj_read() {
   NanJit jit = NanJitCreate();
   NanJitFLoad(&jit, test_file, NanJitResolved);

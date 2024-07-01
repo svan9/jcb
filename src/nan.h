@@ -1876,14 +1876,14 @@ void NanJitToLex(NanJit* jit, NanLexer* lexer) {
 void NanJitLexFSave(NanLexer* lexer, char* path) {
   NanDescryptor descr = NanDescryptorCreate();
   NanDescryptorFront(&descr, *lexer, NanLexerTEXT);
-  NanFile file = NanFileOpen(path, NAN_WRITE | NAN_CREATE);
+  NanFile file = NanFileOpen(path, NAN_WRITE | NAN_CREATE | NAN_BINARY);
   NanFileWrite(&file, descr.content);
   NanFileClose(&file);
 }
 
 NanLexer NanJitLexFLoad(char* path) {
   NanDescryptor descr = NanDescryptorCreate();
-  NanFile file = NanFileOpen(path, NAN_READ | NAN_CREATE);
+  NanFile file = NanFileOpen(path, NAN_READ | NAN_CREATE | NAN_BINARY);
   descr.content = NanFileRead(&file);
   NanFileClose(&file);
   return NanDescryptorBack(&descr);
