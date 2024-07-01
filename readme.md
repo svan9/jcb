@@ -1,6 +1,19 @@
-> hellow, word
-```byte
-'01' '03' '01' '02' '00' '0d' '00' '00' '00' 'h' 'e' 'l' 'l' 'o' 'w' ',' '20' 'w' 'o' 'r' 'd' '0d' '0a' '01' '00'
+### 'hellow, word' program [deprecated]
+```c
+'01' '03' '01' '02' '00' '0d' '00' '00' '00' 'h' 'e' 'l' 'l' 'o' 'w' ',' '20' 'w' 'o' 'r' 'd' '0a'
+```
+```c
+[NEXBYTE][WRITE][NEXTBYTE][TEXT][NEXTSTRING][LENGHT(4U)][TEXT(`hellow, word\n`)]
+```
+
+
+### 'hellow, word' program [newgen]
+```c
+'03' '01' '02' '0d' '00' '00' '00' 'h' 'e' 'l' 'l' 'o' 'w' ',' '20' 'w' 'o' 'r' 'd' '0a'
+```
+```c   
+[WRITE][SIGN  ][TEXT][LENGHT(4U)][TEXT(`hellow, word\n`)]
+[WRITE][stdout][TEXT][13        ][TEXT(`hellow, word\n`)]
 ```
 
 ## '.co' file instructions 
