@@ -1,0 +1,28 @@
+{
+	"files.associations": {
+		"*.env": "properties",
+		"cctype": "cpp",
+		"cstdarg": "cpp",
+		"cstddef": "cpp",
+		"cstdio": "cpp",
+		"cstdlib": "cpp",
+		"ctime": "cpp",
+		"cwchar": "cpp",
+		"cwctype": "cpp",
+		"cinttypes": "cpp",
+		"cstdint": "cpp",
+		"stdlib.h": "c",
+		"stddef.h": "c",
+		"ctype.h": "c",
+		"string.h": "c",
+		"io.h": "c",
+		"stdio.h": "c",
+		"stdbool.h": "c",
+		"inttypes.h": "c",
+		"unistd.h": "c",
+		"stdarg.h": "c",
+		"_mingw.h": "c",
+		"msvcrtver.h": "c",
+		"w32api.h": "c"
+	}
+}

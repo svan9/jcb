@@ -44,6 +44,13 @@ extern "C" {
 
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
+#ifdef __STRICT_ANSI__ 
+  #ifndef _MAX_PATH
+    #define _MAX_PATH (260)
+  #endif
+_CRTIMP __cdecl __MINGW_NOTHROW  char *_fullpath (char*, const char*, size_t);
+#endif
 
 typedef unsigned char ubyte;
 typedef void* NanObjectLink;
@@ -708,7 +715,9 @@ size_t NanFileSeek(NanFile* file) {
 }
 
 NanFile NanFileOpen(const char* path, uintptr_t flags) {
-  if (!isFilePath(path)) { ENAN_PANIC_CODE("file error", "undefined file path"); }
+  if (!isFilePath(path) && !(flags & NAN_CREATE)) { 
+    printf("'%s'\n", path);
+    ENAN_PANIC_CODE("file error", "undefined file path"); }
   NanFile file = NanFileCreate(path, flags);
   char fstr[3] = "\0\0\0";
   if (file.flags & NAN_READ) {
@@ -1634,6 +1643,7 @@ void NanJitMemoryFree(NanJitMemory* self, NanRange* range) {
 
 typedef enum {
   NA_PRINT,
+  NA_WRITE,
   NA_INPUT
 } NanJitActionKind;
 
@@ -1707,10 +1717,129 @@ void NanJitRun(NanJit* self) {
   }
 }
 
-static const ubyte NanLexerTEXT  = 2;
-static const ubyte NanLexerWRITE = 3;
-static const ubyte NanLexerINPUT = 4;
-static const ubyte NanLexerVAR   = 5;
+/*
+  [TEXT][size][text(size)]
+* signature
+$   (1)     - stdout (only TEXT)
+$   (2)     - stdin (only TEXT)
+$   (3-255) - template vars
+*/
+static const ubyte NanLexerTEXT    = 2;
+/*
+  [WRITE][signature][TEXT|INT|FLOAT]
+* signature
+$   (1)     - stdout (only TEXT)
+$   (2)     - stdin (only TEXT)
+$   (3-255) - template vars
+*/
+static const ubyte NanLexerWRITE   = 3;
+/*
+  [INPUT][signature]
+* signature
+$   (3-255) - template vars
+*/
+static const ubyte NanLexerINPUT   = 4;
+/*
+  [VAR][signature][size]
+* signature (3-255)
+* size (4U)
+*/
+static const ubyte NanLexerVAR     = 5;
+/*
+  [WRITEex][signature(4U)][TEXT|INT|FLOAT]
+* signature
+$   (1)          - stdout
+$   (2)          - stdin
+$   (UINT32_MAX) - template vars
+*/
+static const ubyte NanLexerWRITEex = 6;
+/*
+  [VAR][signature(4U)][size]
+* signature (UINT32_MAX)
+* size (4U)
+*/
+static const ubyte NanLexerVARex   = 7;
+/*
+  [INT][size][value(size)]
+* size (4U)
+* value (size)
+*/
+static const ubyte NanLexerINT     = 8;
+/*
+  [FLAOT][size][value(size)]
+* size (4U)
+* value (size)
+*/
+static const ubyte NanLexerFLOAT   = 9;
+/*
+  [FRAC][TOP][BOT]
+* TOP (4U)
+* BOT (4U)
+*/
+static const ubyte NanLexerFRAC   = 10;
+/*
+  [ADD][FSIGN][SSIGN]
+* FSIGN (3-255) 
+* SSIGN (3-255) 
+` FSIGN = FSIGN + SSING `
+*/
+static const ubyte NanLexerADD   = 11;
+/*
+  [SUB][FSIGN][SSIGN]
+* FSIGN (3-255) 
+* SSIGN (3-255) 
+` FSIGN = FSIGN - SSING `
+*/
+static const ubyte NanLexerSUB   = 12;
+/*
+  [DIV][FSIGN][SSIGN]
+* FSIGN (3-255) 
+* SSIGN (3-255) 
+` FSIGN = FSIGN / SSING `
+*/
+static const ubyte NanLexerDIV   = 13;
+/*
+  [MUL][FSIGN][SSIGN]
+* FSIGN (3-255) 
+* SSIGN (3-255) 
+` FSIGN = FSIGN * SSING `
+*/
+static const ubyte NanLexerMUL   = 14;
+/*
+  [MUL][FSIGN][SSIGN]
+* FSIGN (3-255) 
+* SSIGN (3-255) 
+` FSIGN = FSIGN % SSING `
+*/
+static const ubyte NanLexerMOD   = 15;
+/*
+  [MOV][FSIGN][SSIGN]
+* FSIGN (3-255) 
+* SSIGN (3-255) 
+` FSIGN -> SSING `
+*/
+static const ubyte NanLexerMOV   = 16;
+/*
+  [MOVL][FSIGN][SSIGN]
+* FSIGN (UINT32_MAX) 
+* SSIGN (3-255) 
+` FSIGN -> SSING `
+*/
+static const ubyte NanLexerMOVL   = 17;
+/*
+  [LMOV][FSIGN][SSIGN]
+* FSIGN (3-255) 
+* SSIGN (UINT32_MAX) 
+` FSIGN -> SSING `
+*/
+static const ubyte NanLexerLMOV   = 18;
+/*
+  [LMOVL][FSIGN][SSIGN]
+* FSIGN (UINT32_MAX) 
+* SSIGN (UINT32_MAX) 
+` FSIGN -> SSING `
+*/
+static const ubyte NanLexerLMOVL  = 19;
 
 void NanJitLex(NanJit* self, NanLexer* lexer) {
   NanLexerUnit* unit;
@@ -1760,15 +1889,34 @@ NanLexer NanJitLexFLoad(char* path) {
   return NanDescryptorBack(&descr);
 }
 
+#define NanJitResolved 0b0001
+#define NanJitNothing  0b0000
 
-void NanJitFSave(NanJit* jit, char* path) {
-  NanLexer lex = NanLexerCreate();
-  NanJitToLex(jit, &lex);
-  NanJitLexFSave(&lex, path);
+
+char* abs_path(char* path) {
+  char* buffer = malloc(_MAX_PATH);
+  if(_fullpath(buffer, path, _MAX_PATH) == NULL) {
+    NAN_PANIC_CODE("path is uncorect");
+  }
+  return buffer;
 }
 
-void NanJitFLoad(NanJit* jit, char* path) {
-  NanLexer lex = NanJitLexFLoad(path);
+void NanJitFSave(NanJit* jit, char* path, int flags) {
+  char* _path = path;
+  if ((flags & NanJitResolved) != 0) {
+    _path = abs_path(path);
+  }
+  NanLexer lex = NanLexerCreate();
+  NanJitToLex(jit, &lex);
+  NanJitLexFSave(&lex, _path);
+}
+
+void NanJitFLoad(NanJit* jit, char* path, int flags) {
+  char* _path = path;
+  if ((flags & NanJitResolved) != 0) {
+    _path = abs_path(path);
+  }
+  NanLexer lex = NanJitLexFLoad(_path);
   NanJitLex(jit, &lex);
 }
 
