@@ -1878,7 +1878,7 @@ NanLexer NanJitLexFLoad(char* path) {
 char* abs_path(char* path) {
 #ifdef __linux__
   char* buffer = malloc(_MAX_PATH);
-  readlink(path, buf, _MAX_PATH);
+  readlink(path, buffer, _MAX_PATH);
   return buffer;
 #elif _WIN32
   char* buffer = malloc(_MAX_PATH);
