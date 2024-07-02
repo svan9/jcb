@@ -3,7 +3,7 @@ name: Makefile CI
 on:
   push:
     tags:
-      - 'v*'
+      - '*.*:*.*.*'
 
 jobs:
   build-ubuntu:
