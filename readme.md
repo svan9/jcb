@@ -1,21 +1,21 @@
 ## USAGE
 
 ### build
-```shell
+```ps
 make build-release -b 
 ```
 
 ### jcb
 #### test hellow, word
-```shell
+```ps
 jcb --test
 ```
 #### help page
-```shell
+```ps
 jcb --help
 ```
 #### execute
-```shell
+```ps
 jcb "path/to/file"
 ```
 _____
