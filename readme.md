@@ -1,13 +1,27 @@
-### 'hellow, word' program [deprecated]
-```c
-'01' '03' '01' '02' '00' '0d' '00' '00' '00' 'h' 'e' 'l' 'l' 'o' 'w' ',' '20' 'w' 'o' 'r' 'd' '0a'
-```
-```c
-[NEXBYTE][WRITE][NEXTBYTE][TEXT][NEXTSTRING][LENGHT(4U)][TEXT(`hellow, word\n`)]
+## USAGE
+
+### build
+```shell
+make build-release -b 
 ```
 
+### jcb
+#### test hellow, word
+```shell
+jcb --test
+```
+#### help page
+```shell
+jcb --help
+```
+#### execute
+```shell
+jcb "path/to/file"
+```
+_____
 
-### 'hellow, word' program [newgen]
+
+### 'hellow, word' program
 ```c
 '03' '01' '02' '0d' '00' '00' '00' 'h' 'e' 'l' 'l' 'o' 'w' ',' '20' 'w' 'o' 'r' 'd' '0a'
 ```

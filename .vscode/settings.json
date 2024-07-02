@@ -23,6 +23,11 @@
 		"stdarg.h": "c",
 		"_mingw.h": "c",
 		"msvcrtver.h": "c",
-		"w32api.h": "c"
+		"w32api.h": "c",
+		"array": "c",
+		"initializer_list": "c",
+		"utility": "c",
+		"random": "c",
+		"system_error": "c"
 	}
 }
