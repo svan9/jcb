@@ -11,14 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: checkout repo
-      uses: actions/checkout@main
+      uses: actions/checkout@master
     - name: build-release
       run: make build-release-nowarn-u -b
   windows-latest:
     runs-on: windows-latest
     steps:
     - name: checkout repo
-      uses: actions/checkout@main
+      uses: actions/checkout@master
     - name: build-release
       run: make build-release-nowarn-w -b
  
