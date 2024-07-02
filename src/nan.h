@@ -47,6 +47,15 @@ extern "C" {
 #include <stdlib.h>
 
 #undef _MAX_PATH
+#ifndef _CRTIMP
+#define _CRTIMP
+#endif
+#ifndef __MINGW_NOTHROW
+#define __MINGW_NOTHROW
+#endif
+#ifndef __cdecl
+#define __cdecl
+#endif
 
 _CRTIMP __cdecl __MINGW_NOTHROW  char *_fullpath (char*, const char*, size_t);
 #define _MAX_PATH (260)
