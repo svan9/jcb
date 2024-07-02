@@ -3,6 +3,8 @@ name: Makefile CI
 on:
   push:
     branches: [ "main" ]
+    tags:
+      - 'v*'
   pull_request:
     branches: [ "main" ]
 
@@ -14,9 +16,12 @@ jobs:
       uses: actions/checkout@main
     - name: build-release
       run: make build-release-nowarn-u -b
+    - name: Generate Changelog
+      run: echo "# change something" > ${{ github.workspace }}-CHANGELOG.txt
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
+        body_path: ${{ github.workspace }}-CHANGELOG.txt
         files: release/jcb.exe
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -27,9 +32,12 @@ jobs:
       uses: actions/checkout@main
     - name: build-release
       run: make build-release-nowarn-w -b
+    - name: Generate Changelog
+      run: echo "# change something" > ${{ github.workspace }}-CHANGELOG.txt
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
+        body_path: ${{ github.workspace }}-CHANGELOG.txt
         files: release/jcb.exe
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
