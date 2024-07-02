@@ -14,6 +14,12 @@ jobs:
       uses: actions/checkout@main
     - name: build-release
       run: make build-release-nowarn-u -b
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: release/jcb.exe
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   windows-latest:
     runs-on: windows-latest
     steps:
@@ -21,4 +27,11 @@ jobs:
       uses: actions/checkout@main
     - name: build-release
       run: make build-release-nowarn-w -b
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: release/jcb.exe
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
  
