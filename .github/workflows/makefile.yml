@@ -1,0 +1,19 @@
+name: Makefile CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+    - name: build-release
+      run: make build-release -b
+  windows-latest:
+    runs-on: ubuntu-latest
+    steps:
+    - name: build-release
+      run: make build-release -b
