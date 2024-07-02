@@ -56,8 +56,9 @@ extern "C" {
 #ifndef __cdecl
 #define __cdecl
 #endif
-
+#ifdef _WIN32
 _CRTIMP __cdecl __MINGW_NOTHROW  char *_fullpath (char*, const char*, size_t);
+#endif
 #define _MAX_PATH (260)
 
 typedef unsigned char ubyte;
