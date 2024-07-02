@@ -1,4 +1,5 @@
-[![Makefile CI](https://github.com/svan9/jcb/actions/workflows/makefile-builder.yml/badge.svg?branch=main)](https://github.com/svan9/jcb/actions/workflows/makefile-builder.yml)
+[![build](https://github.com/svan9/jcb/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/svan9/jcb/actions/workflows/build.yml)
+[![Release](https://github.com/svan9/jcb/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/svan9/jcb/actions/workflows/release.yml)
 
 ## USAGE
 
