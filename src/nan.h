@@ -1875,11 +1875,17 @@ NanLexer NanJitLexFLoad(char* path) {
 
 
 char* abs_path(char* path) {
+#ifdef __linux__
+  char* buffer = malloc(_MAX_PATH);
+  readlink(path, buf, _MAX_PATH);
+  return buffer;
+#elif _WIN32
   char* buffer = malloc(_MAX_PATH);
   if(_fullpath(buffer, path, _MAX_PATH) == NULL) {
     NAN_PANIC_CODE("path is uncorect");
   }
   return buffer;
+#endif
 }
 
 void NanJitFSave(NanJit* jit, char* path, int flags) {
