@@ -45,12 +45,11 @@ extern "C" {
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
-#ifdef __STRICT_ANSI__ 
-  #ifndef _MAX_PATH
-    #define _MAX_PATH (260)
-  #endif
+
+#undef _MAX_PATH
+
 _CRTIMP __cdecl __MINGW_NOTHROW  char *_fullpath (char*, const char*, size_t);
-#endif
+#define _MAX_PATH (260)
 
 typedef unsigned char ubyte;
 typedef void* NanObjectLink;
