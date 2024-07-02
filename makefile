@@ -16,6 +16,9 @@ build:
 build-release:
 	gcc -o ./release/$(RELEASE_NAME).exe $(ROOT)/$(ROOT_NAME).c -O3 -Wall
 
+build-release-nowarn:
+	gcc -o ./release/$(RELEASE_NAME).exe $(ROOT)/$(ROOT_NAME).c -O3
+
 build-j:
 	gcc -ggdb -o $(EXEJIT) $(ROOT)/$(ROOT_NAME).c
 
