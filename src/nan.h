@@ -1891,9 +1891,11 @@ char* abs_path(char* path) {
 
 void NanJitFSave(NanJit* jit, char* path, int flags) {
   char* _path = path;
+#ifndef __linux__
   if ((flags & NanJitResolved) != 0) {
     _path = abs_path(path);
   }
+#endif
   NanLexer lex = NanLexerCreate();
   NanJitToLex(jit, &lex);
   NanJitLexFSave(&lex, _path);
@@ -1901,9 +1903,11 @@ void NanJitFSave(NanJit* jit, char* path, int flags) {
 
 void NanJitFLoad(NanJit* jit, char* path, int flags) {
   char* _path = path;
+#ifndef __linux__
   if ((flags & NanJitResolved) != 0) {
     _path = abs_path(path);
   }
+#endif
   NanLexer lex = NanJitLexFLoad(_path);
   NanJitLex(jit, &lex);
 }
