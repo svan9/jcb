@@ -1,4 +1,4 @@
-name: Release
+name: release
 
 on:
   push:
@@ -19,7 +19,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         body_path: ${{ github.workspace }}-CHANGELOG.txt
-        files: release/jcb-w.exe
+        files: release/jcb-windows.exe
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   windows-latest:
@@ -35,7 +35,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         body_path: ${{ github.workspace }}-CHANGELOG.txt
-        files: release/jcb-u.exe
+        files: release/jcb-ubuntu.exe
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
