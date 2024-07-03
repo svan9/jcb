@@ -19,7 +19,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         # body_path: ${{ github.workspace }}-CHANGELOG.txt
-        files: release/jcb-windows.exe
+        files: release/jcb-ubuntu.exe
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   windows-latest:
@@ -32,7 +32,7 @@ jobs:
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
-        files: release/jcb-ubuntu.exe
+        files: release/jcb-windows.exe
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
