@@ -19,7 +19,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         # body_path: ${{ github.workspace }}-CHANGELOG.txt
-        files: release/jcb-ubuntu.exe
+        files: release/jcb-ubuntu
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   windows-latest:
