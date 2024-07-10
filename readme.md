@@ -40,7 +40,7 @@ _____
 ```c
 * signature *
 (1)     - stdout (only TEXT)
-(2)     - stdin (only TEXT)
+(2)     - stdin  (only TEXT) // joke, is stdin
 (3-255) - template vars
 ```
 

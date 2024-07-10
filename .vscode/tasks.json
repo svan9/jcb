@@ -1,0 +1,14 @@
+{
+  "tasks": [
+    {
+      "type": "cppbuild",
+      "label": "build-j",
+      "command": "make",
+      "args": [
+        "build-j", 
+        "-b"
+      ]
+    },
+  ],
+  "version": "2.0.0"
+}

@@ -28,6 +28,8 @@
 		"initializer_list": "c",
 		"utility": "c",
 		"random": "c",
-		"system_error": "c"
-	}
+		"system_error": "c",
+		"nan.h": "c"
+	},
+
 }
