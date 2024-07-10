@@ -5,7 +5,13 @@
 #include <string.h>
 #include <string>
 #include <vector>
-#include <io.h>
+#ifdef _WIN32
+  #include <io.h>
+#elif defined(__linux__) 
+  #include <fcntl.h>
+  #include <sys/types.h>
+  #include <unistd.h>
+#endif
 #include <cstdlib>
 #include <stdlib.h>
 #include <sstream>
