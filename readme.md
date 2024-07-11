@@ -61,15 +61,15 @@ _____
   (3-255) - template vars
 ```
 
-### VAR (5)
+<!-- ### VAR (5)
 
 `[VAR][signature][size]`
 ```c
 * signature (3-255)
 * size (4U)
-```
+``` -->
 
-### WRITEex (6)
+<!-- ### WRITEex (6)
 
 `[WRITEex][signature(4U)][TEXT|INT|FLOAT]`
 ```c
@@ -77,37 +77,36 @@ _____
 (1)          - stdout
 (2)          - stdin
 (UINT32_MAX) - template vars
-```
-
+``` -->
+<!-- 
 ### VARex (7)
 `[VAR][signature(4U)][size]`
 ```c
 * signature (UINT32_MAX)
 * size (4U)
-```
+``` -->
 
 
 ### INT (8)
-`[INT][size][value(size)]`
+`[INT][value(size)]`
 ```c
-* size (4U)
 * value (size)
 ```
 
 ### FLOAT (9)
 
-`[FLAOT][size][value(size)]`
+`[FLAOT][value(size)]`
 ```c
-* size (4U)
 * value (size)
 ```
 
 ### FRAC (10)
 
-`[FRAC][TOP][BOT]`
+`[FRAC][TOP][BOT][INT]`
 ```c
 * TOP (4U)
 * BOT (4U)
+* INT (4U)
 ```
 
 ### ADD (11)
@@ -175,7 +174,7 @@ FSIGN = FSIGN % SSING
 ```c
 FSIGN -> SSING 
 ```
-
+<!-- 
 ### MOVL (17)
 
 `[MOVL][FSIGN][SSIGN]`
@@ -196,9 +195,9 @@ FSIGN -> SSING
 ```
 ```c
 FSIGN -> SSING
-```
+``` -->
 
-
+<!-- 
 ### LMOVL (19)
 
 `[LMOVL][FSIGN][SSIGN]`
@@ -208,4 +207,8 @@ FSIGN -> SSING
 ```
 ```c
 FSIGN -> SSING 
-```
+``` -->
+
+todo:
+  descryptor
+  jit

@@ -1,39 +1,41 @@
 #include "nan.h"
-#include "jit.cpp"
+#include "jcb.h"
 
 static const char* test_file = "./temp.co"; 
 
+using namespace Nan;
+
 void cj_write() {
-  NanJit jit;
-  jit.append(NanJit::Token::ActionKind::WRITE, 
-    std::vector<NanJit::Argument>({
-      NanJit::Argument::from<ubyte>(NanJit::Argument::Kind::Sign, NanJit::Signs::stdout_p), 
-      NanJit::Argument::from<NanViewString>(NanJit::Argument::Kind::Text, NanViewString("hellow, word\n"))
+  Jit jit;
+  jit.append(Jit::Token::ActionKind::WRITE, 
+    std::vector<Jit::Argument>({
+      Jit::Argument::from<Nan::ubyte>(Jit::Argument::Kind::Sign, Jit::Signs::stdout_p), 
+      Jit::Argument::from<Nan::ViewString>(Jit::Argument::Kind::Text, Nan::ViewString("hellow, word\n"))
     })
   );
-  jit.append(NanJit::Token::ActionKind::WRITE, 
-    std::vector<NanJit::Argument>({
-      NanJit::Argument::from<ubyte>(NanJit::Argument::Kind::Sign, NanJit::Signs::stdout_p), 
-      NanJit::Argument::from<NanViewString>(NanJit::Argument::Kind::Text, NanViewString("hellow, wordx2\n"))
+  jit.append(Jit::Token::ActionKind::WRITE, 
+    std::vector<Jit::Argument>({
+      Jit::Argument::from<Nan::ubyte>(Jit::Argument::Kind::Sign, Jit::Signs::stdout_p), 
+      Jit::Argument::from<Nan::ViewString>(Jit::Argument::Kind::Text, Nan::ViewString("hellow, wordx2\n"))
     })
   );
-  jit.append(NanJit::Token::ActionKind::WRITE,
-    std::vector<NanJit::Argument>({
-      NanJit::Argument::from<ubyte>(NanJit::Argument::Kind::Sign, NanJit::Signs::stdout_p),
-      NanJit::Argument::from<NanViewString>(NanJit::Argument::Kind::Text, NanViewString("hellow, word twice\n")) 
+  jit.append(Jit::Token::ActionKind::WRITE,
+    std::vector<Jit::Argument>({
+      Jit::Argument::from<Nan::ubyte>(Jit::Argument::Kind::Sign, Jit::Signs::stdout_p),
+      Jit::Argument::from<Nan::ViewString>(Jit::Argument::Kind::Text, Nan::ViewString("hellow, word twice\n")) 
     })
   );
   jit.save((char*)test_file, NanJitResolved);
 }
 
 void cj_read() {
-  NanJit jit;
+  Jit jit;
   jit.load((char*)test_file, NanJitResolved);
   jit.run();
 }
 
 void parse_args(int argc, char** argv) {
-  NanArgumentsRow args;
+  Nan::ArgumentsRow args;
   args.parse(argc, argv);
   std::string temp;
   if (args.includes("--help")) {
@@ -70,11 +72,11 @@ void parse_args(int argc, char** argv) {
     exit(0);
   }
   else if (args.includes("--cmd-write", temp)) {
-    NanJit jit;
-    jit.append(NanJit::Token::ActionKind::WRITE, 
-      std::vector<NanJit::Argument>({
-        NanJit::Argument::from<ubyte>(NanJit::Argument::Kind::Sign, NanJit::Signs::stdout_p), 
-        NanJit::Argument::from<std::string>(NanJit::Argument::Kind::Text, temp)
+    Jit jit;
+    jit.append(Jit::Token::ActionKind::WRITE, 
+      std::vector<Jit::Argument>({
+        Jit::Argument::from<Nan::ubyte>(Jit::Argument::Kind::Sign, Jit::Signs::stdout_p), 
+        Jit::Argument::from<Nan::ViewString>(Jit::Argument::Kind::Text, Nan::ViewString(temp))
       })
     );
     jit.save((char*)test_file, NanJitResolved);
@@ -83,7 +85,7 @@ void parse_args(int argc, char** argv) {
 
   std::string path = args.find_path();
   if (path.empty()) { ENAN_PANIC_CODE_REL("path faild" , "use --help\n"); }
-  NanJit jit;
+  Jit jit;
   jit.load((char*)path.c_str(), NanJitResolved);
   jit.run();
 }

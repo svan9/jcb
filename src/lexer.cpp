@@ -3,15 +3,18 @@
 
 #include "nan.h"
 
-class NanLexer {
+namespace Nan {
+
+
+class Lexer {
 public:
   enum Instruction {
     TEXT     = 2,
     WRITE    = 3,
     INPUT    = 4,
-    VAR      = 5,
-    WRITEex  = 6,
-    VARex    = 7,
+    // VAR      = 5,
+    // WRITEex  = 6,
+    // VARex    = 7,
     INT      = 8,
     FLOAT    = 9,
     FRAC     = 10,
@@ -21,9 +24,9 @@ public:
     MUL      = 14,
     MOD      = 15,
     MOV      = 16,
-    MOVL     = 17,
-    LMOV     = 18,
-    LMOVL    = 19,
+    // MOVL     = 17,
+    // LMOV     = 18,
+    // LMOVL    = 19,
   };
 
   class Unit {
@@ -70,7 +73,7 @@ public:
   const_iterator end() const {return tokens.end();}
   const_iterator cend() const {return tokens.cend();}
 
-  NanLexer() {
+  Lexer() {
     this->cursor = 0;
   }
 
@@ -83,8 +86,6 @@ public:
   }
 };
 
-
-
-
+}
 
 #endif

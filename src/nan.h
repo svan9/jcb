@@ -129,15 +129,17 @@ void AENAN_PANIC_CODE(int line, const char* path, const char* func, const char* 
   exit(1);
 }
 
+namespace Nan {
+  
 
 typedef const char* view_cstr;
 
-class NanViewString {
+class ViewString {
 private:
   char* _data;
   size_t _size;
 public:
-  NanViewString(std::string str) {
+  ViewString(std::string str) {
     // str 
     this->_data = (char*)malloc(str.size());
     memcpy(this->_data, str.data(), str.size());
@@ -145,7 +147,7 @@ public:
     this->_size = str.size();
   }
 
-  NanViewString(const char* str) {
+  ViewString(const char* str) {
     // str 
     this->_data = (char*)malloc(strlen(str));
     memcpy(this->_data, str, strlen(str));
@@ -166,6 +168,64 @@ public:
   }
 };
 
+template <typename T>
+class Frac {
+private:
+  T _top;
+  T _bottom;
+  T _int_part;
+public:
+  Frac(T num, T den, T int_part) {
+    this->_top = num;
+    this->_bottom = den;
+    this->_int_part = int_part;
+  }
+
+  Frac(T num, T den) {
+    this->_top = num;
+    this->_bottom = den;
+    this->_int_part = 0;
+  }
+
+  Frac(const char* str) {
+    memcpy(&this->_top, str, sizeof(T));
+    memcpy(&this->_bottom, str, sizeof(T));
+    memcpy(&this->_int_part, str, sizeof(T));
+  }
+
+  Frac(std::string str) {
+    Frac<T>(str.data());
+  }
+
+// getters
+  int top() const { return this->_top;}
+  int bottom() const { return this->_bottom;}
+  int int_part() const { return this->_int_part;}
+// setters
+  void top(T value) const { return this->_top = value; }
+  void bottom(T value) const { return this->_bottom = value; }
+  void int_part(T value) const { return this->_int_part = value; }
+
+  float getFloat() const { return (top()/bottom())+int_part(); }
+  double getDouble() const { return (top()/bottom())+int_part(); }
+  int getInt() const noexcept { return int_part(); }
+
+  char* data() {
+    char* buffer = (char*)malloc(sizeof(T)+sizeof(T)+sizeof(T));
+    memcpy(buffer, top(), sizeof(T));
+    memcpy(buffer+sizeof(T), bottom(), sizeof(T));
+    memcpy(buffer+sizeof(T)+sizeof(T), int_part(), sizeof(T));
+    return buffer;
+  }
+};
+
+typedef Frac<int>                   IFrac;
+typedef Frac<unsigned>              UFrac; 
+typedef Frac<unsigned char>         U8Frac; 
+typedef Frac<unsigned short>        U16Frac; 
+typedef Frac<unsigned long long>    U64Frac; 
+typedef Frac<float>                 FFrac; 
+
 typedef unsigned char ubyte;
 
 bool isFilePath(const char* path) {
@@ -177,14 +237,14 @@ bool isFilePath(const char* path) {
 #define NAN_BINARY 0b0100
 #define NAN_CREATE 0b1000
 
-class NanFile {
+class File {
 private:
   FILE* ptr;
   size_t size;
   uintptr_t flags;
   const char* path;
 public:
-  NanFile(const char* path, uintptr_t flags) {
+  File(const char* path, uintptr_t flags) {
     if (!isFilePath(path) && !(flags & NAN_CREATE)) { 
       printf("'%s'\n", path);
       ENAN_PANIC_CODE("file error", "undefined file path");
@@ -204,8 +264,8 @@ public:
     return this->size;
   }
 
-  static NanFile open(const char* path, uintptr_t flags) {
-    NanFile file (path, flags);
+  static File open(const char* path, uintptr_t flags) {
+    File file (path, flags);
     file.open();
     return file;
   }
@@ -257,6 +317,7 @@ public:
 };
 
 
+
 template <typename E>
 auto enum_as_integer(E const value) -> typename std::underlying_type<E>::type {
   return static_cast<typename std::underlying_type<E>::type>(value);
@@ -281,7 +342,7 @@ char* abs_path(char* path) {
 }
 
 
-class NanArgumentsRow {
+class ArgumentsRow {
 public:
   class Argument {
   public:
@@ -292,7 +353,7 @@ private:
   std::vector<std::string> content;
   std::vector<Argument> _with_flags;
 public:
-  NanArgumentsRow() {}
+  ArgumentsRow() {}
 
 #define string_starts_with(str, str2) (str.compare(0, strlen(str2), str2) == 0)
 
@@ -358,6 +419,8 @@ public:
     return std::string();
   }
 };
+
+}
 
 static const char* NanCharConsoleClear  = "\033[00m";
 static const char* NanCharConsoleCyanFG = "\033[96m";

@@ -6,10 +6,12 @@
 #include "descryptor.cpp"
 #include "lexer.cpp"
 
+namespace Nan {
+
 #define NanJitResolved 0b0001
 #define NanJitNothing  0b0000
 
-class NanJit {
+class Jit {
 public:
   class Signs {
   public:
@@ -20,7 +22,8 @@ public:
   class Argument {
   public:
     enum Kind {
-      Sign, Text
+      Sign, 
+      Text, Int, Float, Frac,
     };
   private:
     Kind _kind;
@@ -63,9 +66,11 @@ public:
   class Token {
   public:
     enum ActionKind {
-      PRINT,
       INPUT,
       WRITE,
+      ADD, SUB, DIV, MUL, MOD,
+      DIVF,
+      MOV
     };
   private:
     ActionKind _kind;
@@ -103,12 +108,18 @@ public:
       Argument arg = this->arguments.at(index);
       return arg.unpack<T>();
     }
+
+    Nan::Jit::Argument::Kind at_kind(size_t index) {
+      Argument arg = this->arguments.at(index);
+      return arg.kind();
+    }
+
   };
 private:
   std::vector<Token> tokens;
   void* signs[225];
 public:
-  NanJit() { }
+  Jit() { }
 
   template<typename T>
   T* get_sign(ubyte sign) {
@@ -116,8 +127,21 @@ public:
   }
 
   template<typename T>
+  T get_signn(ubyte sign) {
+    return *(T*)(this->signs[(sign-2)]);
+  }
+
+  void swap_sign(ubyte lsign, ubyte rsign) {
+    void* l = this->signs[(lsign-2)]; 
+    void* r = this->signs[(rsign-2)];
+    this->signs[(lsign-2)] = r;
+    this->signs[(rsign-2)] = l;
+  }
+
+  template<typename T>
   void set_sign(ubyte sign, T& src) {
-    signs[sign] = this->get_sign<T>(sign);
+    T* p = this->get_sign<T>(sign);
+    memcpy(p, src, sizeof(T));
   }
 
   void append(Token& token) {
@@ -130,65 +154,298 @@ public:
   }
 
 #define jit_print_const(jit, str)\
-  jit.append(NanJit::Token::ActionKind::WRITE, \
-    std::vector<NanJit::Argument>({\
-      NanJit::Argument::from<ubyte>(NanJit::Argument::Kind::Sign, NanJit::Signs::stdout_p), \
-      NanJit::Argument::from<std::string>(NanJit::Argument::Kind::Text, std::string(str))\
+  jit.append(Jit::Token::ActionKind::WRITE, \
+    std::vector<Jit::Argument>({\
+      Jit::Argument::from<ubyte>(Jit::Argument::Kind::Sign, Jit::Signs::stdout_p), \
+      Jit::Argument::from<std::string>(Jit::Argument::Kind::Text, std::string(str))\
     })\
   );
 
-  void from_lex(NanLexer& lexer) {
-    NanLexer::iterator it = lexer.begin();
+  void from_lex(Lexer& lexer) {
+    Lexer::iterator it = lexer.begin();
     while (it != lexer.end()) {
-      NanLexer::Unit unit = *(it++);
-      if (unit.isType(NanLexer::Instruction::WRITE)) {
-        ubyte sign = (ubyte)unit.text()[0];
-        Token token(Token::ActionKind::WRITE);
-        token.add(Argument::Kind::Sign, sign);
-        unit = *(it++);
-        std::string __text = unit.text().substr(0, unit.text().size());
-        NanViewString text(__text);
-        token.add(Argument::Kind::Text, text);
-        append(token);
+      Lexer::Unit unit = *(it++);
+      Lexer::Instruction type = unit.type();
+      switch (type) {
+        case (Lexer::Instruction::WRITE): {
+          ubyte sign = (ubyte)unit.text()[0];
+          Token token(Token::ActionKind::WRITE);
+          token.add(Argument::Kind::Sign, sign);
+          unit = *(it++);
+          
+          switch (unit.type()) {
+            case (Lexer::Instruction::TEXT): {
+              std::string __text = unit.text().substr(0, unit.text().size());
+              ViewString text(__text);
+              token.add(Argument::Kind::Text, text);
+            } break;
+
+            case (Lexer::Instruction::INT): {
+              std::string __text = unit.text().substr(0, sizeof(int));
+              int number = std::stoi(__text);
+              token.add(Argument::Kind::Int, number);
+            } break;
+
+            case (Lexer::Instruction::FLOAT): {
+              std::string __text = unit.text().substr(0, sizeof(float));
+              float number = std::stoi(__text);
+              token.add(Argument::Kind::Float, number);
+            } break;
+
+            case (Lexer::Instruction::FRAC): {
+              std::string __text = unit.text().substr(0, sizeof(IFrac));
+              IFrac number(__text);
+              token.add(Argument::Kind::Frac, number);
+            } break;
+          
+            default: break;
+          }
+          
+          append(token);
+        } break;
+        
+        case (Lexer::Instruction::MOV): {
+          Token token(Token::ActionKind::MOV);
+          ubyte fsign = (ubyte)unit.text()[0];
+          token.add(Argument::Kind::Sign, fsign);
+          ubyte ssign = (ubyte)unit.text()[1];
+          token.add(Argument::Kind::Sign, ssign);
+          append(token);
+        } break;
+        
+        case (Lexer::Instruction::ADD): {
+          Token token(Token::ActionKind::ADD);
+          ubyte fsign = (ubyte)unit.text()[0];
+          token.add(Argument::Kind::Sign, fsign);
+          ubyte ssign = (ubyte)unit.text()[1];
+          token.add(Argument::Kind::Sign, ssign);
+          append(token);
+        } break;
+        
+        case (Lexer::Instruction::SUB): {
+          Token token(Token::ActionKind::SUB);
+          ubyte fsign = (ubyte)unit.text()[0];
+          token.add(Argument::Kind::Sign, fsign);
+          ubyte ssign = (ubyte)unit.text()[1];
+          token.add(Argument::Kind::Sign, ssign);
+          append(token);
+        } break;
+
+        case (Lexer::Instruction::MUL): {
+          Token token(Token::ActionKind::MUL);
+          ubyte fsign = (ubyte)unit.text()[0];
+          token.add(Argument::Kind::Sign, fsign);
+          ubyte ssign = (ubyte)unit.text()[1];
+          token.add(Argument::Kind::Sign, ssign);
+          append(token);
+        } break;
+
+        case (Lexer::Instruction::DIV): {
+          Token token(Token::ActionKind::DIV);
+          ubyte fsign = (ubyte)unit.text()[0];
+          token.add(Argument::Kind::Sign, fsign);
+          ubyte ssign = (ubyte)unit.text()[1];
+          token.add(Argument::Kind::Sign, ssign);
+          append(token);
+        } break;
+
+        case (Lexer::Instruction::MOD): {
+          Token token(Token::ActionKind::MOD);
+          ubyte fsign = (ubyte)unit.text()[0];
+          token.add(Argument::Kind::Sign, fsign);
+          ubyte ssign = (ubyte)unit.text()[1];
+          token.add(Argument::Kind::Sign, ssign);
+          append(token);
+        } break;
+
+        default: break;
       }
     }
   }
 
-  void to_lex(NanLexer& lexer) {
+  void to_lex(Lexer& lexer) {
     for (Token token: this->tokens) {
       switch(token.kind()) {
         case (Token::ActionKind::WRITE): {
           ubyte sign = token.at<ubyte>(0);
           std::string content(1, sign);
-          NanLexer::Unit unit_write(content, NanLexer::Instruction::WRITE);
+          Lexer::Unit unit_write(content, Lexer::Instruction::WRITE);
           lexer.append(unit_write);
+          Argument::Kind type = token.at_kind(1); 
+          switch(type) {
+            case (Argument::Kind::Text): {
+              ViewString str = token.at<ViewString>(1);
+              Lexer::Unit unit_text(str.toString(), Lexer::Instruction::TEXT);
+              lexer.append(unit_text);
+            } break;
 
-          NanViewString str = token.at<NanViewString>(1);
-          NanLexer::Unit unit_text(str.toString(), NanLexer::Instruction::TEXT);
-          lexer.append(unit_text);
+            case (Argument::Kind::Int): {
+              int number = token.at<int>(1);
+              Lexer::Unit unit_text(std::to_string(number), Lexer::Instruction::INT);
+              lexer.append(unit_text);
+            } break;
+
+            case (Argument::Kind::Float): {
+              float number = token.at<float>(1);
+              Lexer::Unit unit_text(std::to_string(number), Lexer::Instruction::FLOAT);
+              lexer.append(unit_text);
+            } break;
+
+            case (Argument::Kind::Frac): {
+              IFrac number = token.at<IFrac>(1);
+              Lexer::Unit unit_text(number.data(), Lexer::Instruction::FRAC);
+              lexer.append(unit_text);
+            } break;
+
+            default: break;
+          }
         } break;
+
+        case (Token::ActionKind::MOV): {
+          ubyte fsign = token.at<ubyte>(0);
+          ubyte ssign = token.at<ubyte>(1);
+          std::string content;
+          content += fsign;
+          content += ssign;
+          Lexer::Unit unit(content, Lexer::Instruction::MOV);
+          lexer.append(unit);
+        } break;
+
+        case (Token::ActionKind::ADD): {
+          ubyte fsign = token.at<ubyte>(0);
+          ubyte ssign = token.at<ubyte>(1);
+          std::string content;
+          content += fsign;
+          content += ssign;
+          Lexer::Unit unit(content, Lexer::Instruction::ADD);
+          lexer.append(unit);
+        } break;
+
+        case (Token::ActionKind::SUB): {
+          ubyte fsign = token.at<ubyte>(0);
+          ubyte ssign = token.at<ubyte>(1);
+          std::string content;
+          content += fsign;
+          content += ssign;
+          Lexer::Unit unit(content, Lexer::Instruction::SUB);
+          lexer.append(unit);
+        } break;
+
+        case (Token::ActionKind::MUL): {
+          ubyte fsign = token.at<ubyte>(0);
+          ubyte ssign = token.at<ubyte>(1);
+          std::string content;
+          content += fsign;
+          content += ssign;
+          Lexer::Unit unit(content, Lexer::Instruction::MUL);
+          lexer.append(unit);
+        } break;
+
+        case (Token::ActionKind::DIV): {
+          ubyte fsign = token.at<ubyte>(0);
+          ubyte ssign = token.at<ubyte>(1);
+          std::string content;
+          content += fsign;
+          content += ssign;
+          Lexer::Unit unit(content, Lexer::Instruction::DIV);
+          lexer.append(unit);
+        } break;
+
+        case (Token::ActionKind::MOD): {
+          ubyte fsign = token.at<ubyte>(0);
+          ubyte ssign = token.at<ubyte>(1);
+          std::string content;
+          content += fsign;
+          content += ssign;
+          Lexer::Unit unit(content, Lexer::Instruction::MOD);
+          lexer.append(unit);
+        } break;
+
         default: { NAN_PANIC_CODE("unsupported token"); }
       }
     }
   }
-
 
   void run() {
     for (Token token: this->tokens) {
       switch (token.kind()) {
         case (Token::ActionKind::WRITE): {
           ubyte sign = token.at<ubyte>(0);
-          NanViewString text = token.at<NanViewString>(1);
-          if (sign == 1/*stdout*/) {
-            fwrite(text.data(), 1, text.size(), stdout);
-          }
-          else if (sign == 2/*stdin*/) {
-            // fputs(text.c_str(), stdin);
-          } else {
-            this->set_sign(sign, text);
+          Argument::Kind second_kind = token.at_kind(1);
+          switch (second_kind) {
+            case (Argument::Kind::Text): {
+              ViewString text = token.at<ViewString>(1);
+              if (sign == 1/*stdout*/) { fwrite(text.data(), 1, text.size(), stdout); }
+              else if (sign == 2/*stdin*/) { } 
+              else { this->set_sign(sign, text); }
+            } break;
+            
+            case (Argument::Kind::Int): {
+              int number = token.at<int>(1);
+              if (sign == 1/*stdout*/) {
+                std::string str = std::to_string(number);
+                fwrite(str.data(), 1, str.size(), stdout);
+              }
+              else if (sign == 2/*stdin*/) { } 
+              else { this->set_sign(sign, number); }
+            } break;
+
+            case (Argument::Kind::Float): {
+              float number = token.at<float>(1);
+              if (sign == 1/*stdout*/) {
+                std::string str = std::to_string(number);
+                fwrite(str.data(), 1, str.size(), stdout);
+              }
+              else if (sign == 2/*stdin*/) { } 
+              else { this->set_sign(sign, number); }
+            } break;
+          
+            default: break;
           }
         } break;
 
+        case (Token::ActionKind::ADD): {
+          ubyte fsign = token.at<ubyte>(0);
+          ubyte ssign = token.at<ubyte>(1);
+          int x = get_signn<int>(fsign) + get_signn<int>(ssign);
+          set_sign<int>(fsign, x);
+        } break;
+
+        case (Token::ActionKind::SUB): {
+          ubyte fsign = token.at<ubyte>(0);
+          ubyte ssign = token.at<ubyte>(1);
+          int x = get_signn<int>(fsign) - get_signn<int>(ssign);
+          set_sign<int>(fsign, x);
+        } break;
+
+        case (Token::ActionKind::DIV): {
+          ubyte fsign = token.at<ubyte>(0);
+          ubyte ssign = token.at<ubyte>(1);
+          int x = get_signn<int>(fsign) / get_signn<int>(ssign);
+          set_sign<int>(fsign, x);
+        } break;
+        
+        case (Token::ActionKind::MUL): {
+          ubyte fsign = token.at<ubyte>(0);
+          ubyte ssign = token.at<ubyte>(1);
+          int x = get_signn<int>(fsign) * get_signn<int>(ssign);
+          set_sign<int>(fsign, x);
+        } break;
+
+        case (Token::ActionKind::MOD): {
+          ubyte fsign = token.at<ubyte>(0);
+          ubyte ssign = token.at<ubyte>(1);
+          int x = get_signn<int>(fsign) % get_signn<int>(ssign);
+          set_sign<int>(fsign, x);
+        } break;
+
+        case (Token::ActionKind::MOV): {
+          ubyte fsign = token.at<ubyte>(0);
+          ubyte ssign = token.at<ubyte>(1);
+          int x = get_signn<int>(fsign);
+          set_sign<int>(ssign, x);
+        } break;
+        
         default: {
           NAN_PANIC_CODE("unsupported token");
         }
@@ -207,11 +464,11 @@ public:
 #else
     char* _path = path;
 #endif
-    NanLexer lex;
+    Lexer lex;
     this->to_lex(lex);
-    NanDescryptor descr;
+    Descryptor descr;
     descr.write(lex);
-    NanFile file(_path, NAN_WRITE | NAN_CREATE | NAN_BINARY);
+    File file(_path, NAN_WRITE | NAN_CREATE | NAN_BINARY);
     file.open();
     file.write(descr.gets());
     file.close();
@@ -228,9 +485,9 @@ public:
 #else
     char* _path = path;
 #endif
-    NanLexer lex;
-    NanDescryptor descr;
-    NanFile file(_path, NAN_READ | NAN_CREATE | NAN_BINARY);
+    Lexer lex;
+    Descryptor descr;
+    File file(_path, NAN_READ | NAN_CREATE | NAN_BINARY);
     file.open();
     descr.puts(file.read());
     file.close();
@@ -239,6 +496,8 @@ public:
   }
   
 };
+
+}
 
 
 
