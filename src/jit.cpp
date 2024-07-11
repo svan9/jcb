@@ -136,10 +136,6 @@ public:
       NanJit::Argument::from<std::string>(NanJit::Argument::Kind::Text, std::string(str))\
     })\
   );
-  // void append(Token::ActionKind kind, std::vector<Argument> content) {
-  //   Token token(kind, content);
-  //   tokens.push_back(token);
-  // }
 
   void from_lex(NanLexer& lexer) {
     NanLexer::iterator it = lexer.begin();
@@ -167,8 +163,8 @@ public:
           NanLexer::Unit unit_write(content, NanLexer::Instruction::WRITE);
           lexer.append(unit_write);
 
-          std::string str = token.at<std::string>(1);
-          NanLexer::Unit unit_text(str, NanLexer::Instruction::TEXT);
+          NanViewString str = token.at<NanViewString>(1);
+          NanLexer::Unit unit_text(str.toString(), NanLexer::Instruction::TEXT);
           lexer.append(unit_text);
         } break;
         default: { NAN_PANIC_CODE("unsupported token"); }

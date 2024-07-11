@@ -145,12 +145,24 @@ public:
     this->_size = str.size();
   }
 
+  NanViewString(const char* str) {
+    // str 
+    this->_data = (char*)malloc(strlen(str));
+    memcpy(this->_data, str, strlen(str));
+    // this->_data, str.size()
+    this->_size = strlen(str);
+  }
+
   const char* data() const noexcept {
     return this->_data;
   }
 
   size_t size() const noexcept {
     return this->_size;
+  }
+
+  std::string toString() const {
+    return std::string(this->_data, this->_size);
   }
 };
 

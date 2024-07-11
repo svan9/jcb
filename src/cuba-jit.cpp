@@ -8,16 +8,21 @@ void cj_write() {
   jit.append(NanJit::Token::ActionKind::WRITE, 
     std::vector<NanJit::Argument>({
       NanJit::Argument::from<ubyte>(NanJit::Argument::Kind::Sign, NanJit::Signs::stdout_p), 
-      NanJit::Argument::from<std::string>(NanJit::Argument::Kind::Text, std::string("hellow, word\n"))
+      NanJit::Argument::from<NanViewString>(NanJit::Argument::Kind::Text, NanViewString("hellow, word\n"))
     })
   );
   jit.append(NanJit::Token::ActionKind::WRITE, 
     std::vector<NanJit::Argument>({
       NanJit::Argument::from<ubyte>(NanJit::Argument::Kind::Sign, NanJit::Signs::stdout_p), 
-      NanJit::Argument::from<std::string>(NanJit::Argument::Kind::Text, std::string("hellow, wordx2\n"))
+      NanJit::Argument::from<NanViewString>(NanJit::Argument::Kind::Text, NanViewString("hellow, wordx2\n"))
     })
   );
-  jit_print_const(jit, "hellow, word twice\n");
+  jit.append(NanJit::Token::ActionKind::WRITE,
+    std::vector<NanJit::Argument>({
+      NanJit::Argument::from<ubyte>(NanJit::Argument::Kind::Sign, NanJit::Signs::stdout_p),
+      NanJit::Argument::from<NanViewString>(NanJit::Argument::Kind::Text, NanViewString("hellow, word twice\n")) 
+    })
+  );
   jit.save((char*)test_file, NanJitResolved);
 }
 

@@ -8,8 +8,8 @@
 			"name": "cubajit",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/cuba/cuba-jit.exe",
-			"args": [],
+			"program": "${workspaceFolder}/src/cuba-jit.exe",
+			"args": ["--test"],
 			"stopAtEntry": false,
 			"cwd": "${fileDirname}",
 			"preLaunchTask": {

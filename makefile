@@ -32,8 +32,8 @@ build-j:
 	g++ -ggdb -o $(EXE) $(ROOT)/$(ROOT_NAME).cpp
 
 build-lib:
-	g++ -o $(BIN)/descryptor.o  -c $(ROOT)/descryptor.cpp
-	g++ -o $(BIN)/jit.o         -c $(ROOT)/jit.cpp
-	g++ -o $(BIN)/lexer.o       -c $(ROOT)/lexer.cpp
-	g++ -o $(BIN)/nan.o         -c $(ROOT)/nan.h
-	ar  -r $(BIN)/jcb.a $(BIN)/descryptor.o $(BIN)/jit.o $(BIN)/lexer.o $(BIN)/nan.o 
+	g++ -I./include -o $(BIN)/descryptor.o  -c $(ROOT)/jcb/descryptor.cpp		
+	g++ -I./include -o $(BIN)/jit.o         -c $(ROOT)/jcb/jit.cpp				 	
+	g++ -I./include -o $(BIN)/lexer.o       -c $(ROOT)/jcb/lexer.cpp 				
+	g++ -I./include -o $(BIN)/nan.o         -c $(ROOT)/jcb/nan.cpp 					
+	ar -r $(BIN)/libjcb.a $(BIN)/jit.o $(BIN)/descryptor.o $(BIN)/lexer.o   $(BIN)/nan.o 
