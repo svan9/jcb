@@ -61,13 +61,16 @@ _____
   (3-255) - template vars
 ```
 
-<!-- ### VAR (5)
+### ITOS (5)
 
-`[VAR][signature][size]`
+`[ITOS][FSIGN][SSIGN]`
 ```c
-* signature (3-255)
-* size (4U)
-``` -->
+* FSIGN (3-255) 
+* SSIGN (3-255) 
+```
+```c
+FSIGN = SSING::toString()
+```
 
 <!-- ### WRITEex (6)
 
@@ -210,5 +213,4 @@ FSIGN -> SSING
 ``` -->
 
 todo:
-  descryptor
-  jit
+  swap

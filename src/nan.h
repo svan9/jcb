@@ -212,9 +212,9 @@ public:
 
   char* data() {
     char* buffer = (char*)malloc(sizeof(T)+sizeof(T)+sizeof(T));
-    memcpy(buffer, top(), sizeof(T));
-    memcpy(buffer+sizeof(T), bottom(), sizeof(T));
-    memcpy(buffer+sizeof(T)+sizeof(T), int_part(), sizeof(T));
+    memcpy(buffer, &_top, sizeof(T));
+    memcpy(buffer+sizeof(T), &_bottom, sizeof(T));
+    memcpy(buffer+sizeof(T)+sizeof(T), &_int_part, sizeof(T));
     return buffer;
   }
 };

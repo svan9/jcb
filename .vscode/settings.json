@@ -58,7 +58,13 @@
 		"memory_resource": "cpp",
 		"numeric": "cpp",
 		"tuple": "cpp",
-		"type_traits": "cpp"
+		"type_traits": "cpp",
+		"cassert": "cpp",
+		"cerrno": "cpp",
+		"climits": "cpp",
+		"ios": "cpp",
+		"locale": "cpp",
+		"queue": "cpp"
 	},
 
 }

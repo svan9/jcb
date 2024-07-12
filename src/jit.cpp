@@ -70,7 +70,8 @@ public:
       WRITE,
       ADD, SUB, DIV, MUL, MOD,
       DIVF,
-      MOV
+      MOV,
+      ITOS,
     };
   private:
     ActionKind _kind;
@@ -119,15 +120,21 @@ private:
   std::vector<Token> tokens;
   void* signs[225];
 public:
-  Jit() { }
+  Jit() {}
 
   template<typename T>
   T* get_sign(ubyte sign) {
+    if ((sign - 2) < 0) {
+      throw std::runtime_error("sign must be in range (3-255)");
+    }
     return (T*)(this->signs[(sign-2)]);
   }
 
   template<typename T>
   T get_signn(ubyte sign) {
+    if ((sign - 2) < 0) {
+      throw std::runtime_error("sign must be in range (3-255)");
+    }
     return *(T*)(this->signs[(sign-2)]);
   }
 
@@ -140,8 +147,13 @@ public:
 
   template<typename T>
   void set_sign(ubyte sign, T& src) {
-    T* p = this->get_sign<T>(sign);
-    memcpy(p, src, sizeof(T));
+    if ((sign - 2) < 0) {
+      throw std::runtime_error("sign must be in range (3-255)");
+    }
+
+    this->signs[(sign-2)] = &src;
+    // T* p = this->get_sign<T>(sign);
+    // memcpy(p, &src, sizeof(T));
   }
 
   void append(Token& token) {
@@ -180,15 +192,23 @@ public:
               token.add(Argument::Kind::Text, text);
             } break;
 
+            case (Lexer::Instruction::SIGN): {
+              std::string __text = unit.text().substr(0, unit.text().size());
+              ubyte sign = (ubyte)__text.data()[0];
+              token.add(Argument::Kind::Sign, sign);
+            } break;
+
             case (Lexer::Instruction::INT): {
               std::string __text = unit.text().substr(0, sizeof(int));
-              int number = std::stoi(__text);
+              int number;
+              memcpy(&number, __text.data(), sizeof(int));
               token.add(Argument::Kind::Int, number);
             } break;
 
             case (Lexer::Instruction::FLOAT): {
               std::string __text = unit.text().substr(0, sizeof(float));
-              float number = std::stoi(__text);
+              float number;
+              memcpy(&number, __text.data(), sizeof(int));
               token.add(Argument::Kind::Float, number);
             } break;
 
@@ -204,6 +224,15 @@ public:
           append(token);
         } break;
         
+        case (Lexer::Instruction::ITOS): {
+          Token token(Token::ActionKind::ITOS);
+          ubyte fsign = (ubyte)unit.text()[0];
+          token.add(Argument::Kind::Sign, fsign);
+          ubyte ssign = (ubyte)unit.text()[1];
+          token.add(Argument::Kind::Sign, ssign);
+          append(token);
+        } break;
+
         case (Lexer::Instruction::MOV): {
           Token token(Token::ActionKind::MOV);
           ubyte fsign = (ubyte)unit.text()[0];
@@ -281,13 +310,25 @@ public:
 
             case (Argument::Kind::Int): {
               int number = token.at<int>(1);
-              Lexer::Unit unit_text(std::to_string(number), Lexer::Instruction::INT);
+              char buffer[sizeof(int)];
+              memcpy(buffer, &number, sizeof(int));
+              Lexer::Unit unit_text(std::string(buffer, sizeof(int)), Lexer::Instruction::INT);
+              lexer.append(unit_text);
+            } break;
+
+            case (Argument::Kind::Sign): {
+              ubyte number = token.at<ubyte>(1);
+              char buffer[sizeof(ubyte)];
+              memcpy(buffer, &number, sizeof(ubyte));
+              Lexer::Unit unit_text(std::string(buffer, sizeof(ubyte)), Lexer::Instruction::SIGN);
               lexer.append(unit_text);
             } break;
 
             case (Argument::Kind::Float): {
               float number = token.at<float>(1);
-              Lexer::Unit unit_text(std::to_string(number), Lexer::Instruction::FLOAT);
+              char buffer[sizeof(float)];
+              memcpy(buffer, &number, sizeof(float));
+              Lexer::Unit unit_text(std::string(buffer, sizeof(float)), Lexer::Instruction::FLOAT);
               lexer.append(unit_text);
             } break;
 
@@ -299,6 +340,16 @@ public:
 
             default: break;
           }
+        } break;
+
+        case (Token::ActionKind::ITOS): {
+          ubyte fsign = token.at<ubyte>(0);
+          ubyte ssign = token.at<ubyte>(1);
+          std::string content;
+          content += fsign;
+          content += ssign;
+          Lexer::Unit unit(content, Lexer::Instruction::ITOS);
+          lexer.append(unit);
         } break;
 
         case (Token::ActionKind::MOV): {
@@ -380,6 +431,14 @@ public:
               else { this->set_sign(sign, text); }
             } break;
             
+            case (Argument::Kind::Sign): {
+              ubyte ssign = token.at<ubyte>(1);
+              ViewString text = get_signn<ViewString>(ssign);
+              if (sign == 1/*stdout*/) { fwrite(text.data(), 1, text.size(), stdout); }
+              else if (sign == 2/*stdin*/) { } 
+              else { this->set_sign(sign, text); }
+            } break;
+            
             case (Argument::Kind::Int): {
               int number = token.at<int>(1);
               if (sign == 1/*stdout*/) {
@@ -439,11 +498,23 @@ public:
           set_sign<int>(fsign, x);
         } break;
 
+        case (Token::ActionKind::ITOS): {
+          ubyte fsign = token.at<ubyte>(0);
+          ubyte ssign = token.at<ubyte>(1);
+          int x = get_signn<int>(ssign);
+          ViewString str(std::to_string(x));
+          set_sign<ViewString>(fsign, str);
+        } break;
+
         case (Token::ActionKind::MOV): {
           ubyte fsign = token.at<ubyte>(0);
           ubyte ssign = token.at<ubyte>(1);
+          // if (fsign == 1/*stdout*/) {
+          //   ViewString str = get_signn<ViewString>(fsign);
+          // } else {
           int x = get_signn<int>(fsign);
           set_sign<int>(ssign, x);
+          // }
         } break;
         
         default: {

@@ -14,7 +14,7 @@ run-super: build-cp
 	./$(EXE) --test
 
 build:
-	g++ -o $(EXE) $(ROOT)/$(ROOT_NAME).cpp
+	g++ -o $(EXE) $(ROOT)/$(ROOT_NAME).cpp -ggdb
 
 build-cp:
 	g++ -o $(EXE) $(ROOT)/$(ROOT_NAME).cpp -Wall

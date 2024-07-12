@@ -27,21 +27,24 @@ public:
           builder << slength;
           builder << unit.text();
         } break;
-        case (
-          Lexer::Instruction::INT    ||
-          Lexer::Instruction::FLOAT  ||
-          Lexer::Instruction::FRAC   ||
-          Lexer::Instruction::ADD    ||
-          Lexer::Instruction::SUB    ||
-          Lexer::Instruction::MOV    ||
-          Lexer::Instruction::MOD    ||
-          Lexer::Instruction::MUL    ||
-          Lexer::Instruction::DIV
-        ): {
+        case (Lexer::Instruction::INT):
+        case (Lexer::Instruction::FLOAT):
+        case (Lexer::Instruction::FRAC):
+        case (Lexer::Instruction::ADD):
+        case (Lexer::Instruction::SUB):
+        case (Lexer::Instruction::MOV):
+        case (Lexer::Instruction::MOD):
+        case (Lexer::Instruction::MUL):
+        case (Lexer::Instruction::DIV):
+        case (Lexer::Instruction::ITOS):
+        case (Lexer::Instruction::SIGN):
+        {
           builder << unit.text();
         } break;
 
-        default: break;
+        default: {
+          throw std::runtime_error("descryptor: undefined token");
+        }
       }
     } 
     this->_content = builder.str(); 
@@ -91,10 +94,19 @@ public:
           it+=size;
         } break;
 
+        case (Lexer::Instruction::SIGN): {
+          char* ptr;
+          ptr = &this->_content[std::distance(this->_content.begin(), it)];
+          std::string str(ptr, sizeof(ubyte));
+          Lexer::Unit unit(str, enum_as_integer(type));
+          lexer->append(unit);
+          it+=sizeof(ubyte);
+        } break;
+
         case (Lexer::Instruction::INT): {
           char* ptr;
           ptr = &this->_content[std::distance(this->_content.begin(), it)];
-          std::string str(ptr, 0U, sizeof(int));
+          std::string str(ptr, sizeof(int));
           Lexer::Unit unit(str, enum_as_integer(type));
           lexer->append(unit);
           it+=sizeof(int);
@@ -117,15 +129,15 @@ public:
           lexer->append(unit);
           it+=sizeof(IFrac);
         } break;
-
-        case (
-          Lexer::Instruction::ADD ||
-          Lexer::Instruction::SUB ||
-          Lexer::Instruction::MOV ||
-          Lexer::Instruction::MOD ||
-          Lexer::Instruction::MUL ||
-          Lexer::Instruction::DIV
-        ): {
+    
+        case (Lexer::Instruction::ADD):
+        case (Lexer::Instruction::SUB):
+        case (Lexer::Instruction::MOV):
+        case (Lexer::Instruction::MOD):
+        case (Lexer::Instruction::MUL):
+        case (Lexer::Instruction::DIV):
+        case (Lexer::Instruction::ITOS):
+        {
           char fsign = *(it++);
           char ssign = *(it++);
           std::string str;
@@ -135,7 +147,9 @@ public:
           lexer->append(unit);
         } break;
 
-        default: break;
+        default: {
+          throw std::runtime_error("descryptor read: undefined token");
+        }
       }
     }
   }

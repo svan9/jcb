@@ -9,10 +9,11 @@ namespace Nan {
 class Lexer {
 public:
   enum Instruction {
+    SIGN     = 1,
     TEXT     = 2,
     WRITE    = 3,
     INPUT    = 4,
-    // VAR      = 5,
+    ITOS     = 5,
     // WRITEex  = 6,
     // VARex    = 7,
     INT      = 8,
